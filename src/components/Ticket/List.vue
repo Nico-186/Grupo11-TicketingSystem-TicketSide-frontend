@@ -5,9 +5,7 @@
                 <label>Buscar ticket</label>
                 <input type="text" class="form-control" placeholder="Busqueda">
             </div>
-
-
-
+            
             <div class="flex-grow-1 d-flex flex-column border w-100" style="background-color: #171a1c; min-height: 0;">
 
                 <p class="w-100 mb-0 px-3 py-2 fs-5">Tickets</p>
