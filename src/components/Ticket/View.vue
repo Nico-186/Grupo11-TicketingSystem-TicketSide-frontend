@@ -1,5 +1,5 @@
 <template>
-    <div class="container-fluid h-100 v-100 py-4" style="padding-left:5%; padding-right: 15%">
+    <div class="container-fluid h-100 v-100 py-4" style="padding-left:5%; padding-right: 5%">
         <div class="d-flex flex-column align-items-center gap-3">
 
             <div class="d-flex align-items-center w-100">
@@ -65,7 +65,7 @@
 
             <button
                 v-if="newAssinedTo != ticket.IDencargado || newPriority != this.ticket.IDprio || newStatus != this.ticket.IDstatus"
-                type="button" class="btn btn-success mb-3 w-100">
+                type="button" class="btn btn-success mb-3 w-100" @click.prevent="updateTicket()">
                 Guardar Cambios
             </button>
 
@@ -176,6 +176,14 @@ export default {
                 }).catch((error) => {
                     return alert(error);
                 })
+        },
+        async updateTicket() {
+            await axios.put(`http://localhost:3000/tickets/?id=${this.ticket.ID_ticket}`, { idencargado: this.newAssinedTo, idstatus: this.newStatus, idprioridad: this.newPriority}).then(
+                    (response) => {
+                        return alert(`Ticket actualizado con exito`);
+                    }).catch((error) =>{
+                        return alert(error);
+                    })
         }
     }
 }

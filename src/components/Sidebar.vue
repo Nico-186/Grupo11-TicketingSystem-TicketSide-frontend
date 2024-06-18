@@ -34,6 +34,8 @@ export default {
 
             linkList.push({text: 'Lista de tickets', page: 1})
             linkList.push({text: 'Crear nuevo ticket', page: 2})
+            linkList.push({text: 'Gestionar prioridades', page: 3})
+            linkList.push({text: 'Gestionar estatus', page: 4})
 
             return linkList;
         }

@@ -33,6 +33,12 @@
             :prioridades="listaPrioridades"
             :id-log="loggedUser.id"
             ></ticketForm>
+
+            <tags
+            v-if="activePage > 2"
+            :status="listaEstatus"
+            :prioridades="listaPrioridades"
+            ></tags>
         </div>
     </div>
     
@@ -46,13 +52,16 @@ import ticketList from './Ticket/List.vue';
 import ticketView from './Ticket/View.vue';
 import ticketForm from './Ticket/Form.vue';
 
+import tags from './Tags.vue';
+
 export default {
     components: {
         login,
         sidebar,
         ticketList,
         ticketForm,
-        ticketView
+        ticketView,
+        tags
     },
     computed: {
         checkSidebar() {
