@@ -1,10 +1,10 @@
 <template>
     <login v-if="!isLogged" ref="loginComponent" :try-loggin="(username, password) => tryLogIn(username, password)"></login>
-    <div class="container-fluid vh-100 p-0" :style=" isLogged ? '' : 'display: none;' ">
+    <div class="d-flex flex-column container-fluid vh-100 p-0" :style=" isLogged ? '' : 'display: none;' ">
 
-        <sidebar ref="sidebar" :role="loggedUser.role" :sidebar-click="(page) => activePage = page"></sidebar>
+        <sidebar ref="sidebar" :active-page="activePage" :role="loggedUser.role" :sidebar-click="(page) => activePage = page"></sidebar>
 
-        <div v-if="isLogged" id="content" class="container-fluid overflow-auto" style="height: 90%;"
+        <div v-if="isLogged" id="content" class="container-fluid overflow-auto"
             :style="checkSidebar ? 'padding: 0% 0% 0% 17%;' : 'padding: 0%;'">
 
             <ticketList
