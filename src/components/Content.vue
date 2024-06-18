@@ -34,11 +34,15 @@
             :id-log="loggedUser.id"
             ></ticketForm>
 
-            <tags
-            v-if="activePage > 2"
-            :status="listaEstatus"
+            <priority
+            v-if="activePage == 3"
             :prioridades="listaPrioridades"
-            ></tags>
+            ></priority>
+
+            <status
+            v-if="activePage == 4"
+            :status="listaEstatus"
+            ></status>
         </div>
     </div>
     
@@ -52,7 +56,9 @@ import ticketList from './Ticket/List.vue';
 import ticketView from './Ticket/View.vue';
 import ticketForm from './Ticket/Form.vue';
 
-import tags from './Tags.vue';
+import status from './Status.vue';
+import priority from './Priority.vue';
+import Status from './Status.vue';
 
 export default {
     components: {
@@ -61,7 +67,8 @@ export default {
         ticketList,
         ticketForm,
         ticketView,
-        tags
+        status,
+        priority
     },
     computed: {
         checkSidebar() {
