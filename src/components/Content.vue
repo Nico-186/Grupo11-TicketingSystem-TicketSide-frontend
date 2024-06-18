@@ -14,7 +14,17 @@
             :status="listaEstatus"
             :prioridades="listaPrioridades"
             :user-list="userList"
+            :open-selected-ticket="(ticketId) => showSelectedTicket(ticketId)" 
             ></ticketList>
+
+            <ticketView
+            v-if="activePage == 1.1"
+            :ticket="selectedTicket"
+            :logged-user="loggedUser"
+            :status="listaEstatus"
+            :prioridades="listaPrioridades"
+            :user-list="userList"
+            ></ticketView>
 
             <ticketForm
             v-if="activePage == 2"
@@ -31,6 +41,7 @@ import login from './Login.vue';
 import sidebar from './Sidebar.vue';
 
 import ticketList from './Ticket/List.vue';
+import ticketView from './Ticket/View.vue';
 import ticketForm from './Ticket/Form.vue';
 
 export default {
@@ -38,7 +49,8 @@ export default {
         login,
         sidebar,
         ticketList,
-        ticketForm
+        ticketForm,
+        ticketView
     },
     computed: {
         checkSidebar() {
@@ -62,7 +74,8 @@ export default {
             createNewUser: false,
             listaEstatus: ['No existen estatus'],
             listaPrioridades: [],
-            userList: []
+            userList: [],
+            selectedTicket: {}
         }
     },
     mounted() {
@@ -77,12 +90,10 @@ export default {
                     } else {
                         this.dataToLoggedUser(response.data[0]);
                         this.isLogged = true;
-                        if (this.loggedUser.role == 2){
-                            this.getTickets();
-                            this.getStatus();
-                            this.getPriority();
-                            this.getusernames();
-                        }
+                        this.getTickets();
+                        this.getStatus();
+                        this.getPriority();
+                        this.getusernames();
                     }
                 }
             )
@@ -122,6 +133,13 @@ export default {
                     }
                 }
             )
+        },
+        showSelectedTicket(ticketId) {
+            this.selectedTicket = this.findTicketById(ticketId); 
+            this.activePage = 1.1;
+        },
+        findTicketById(id) {
+            return this.ticketList.find((obj) => obj.ID_ticket == id)
         },
         dataToLoggedUser(resData) {
             this.loggedUser = {

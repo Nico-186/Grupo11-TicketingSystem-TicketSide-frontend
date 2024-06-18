@@ -22,10 +22,13 @@
                 <div class="flex-grow-1 w-100 overflow-auto">
                     <div class="list-group">
                         <ul class="list-group">
-                            <button v-for="(ticket, index) in tickets" :id="index" type="button"
+                            <button 
+                                v-for="ticket in tickets"
+                                :id="ticket.ID_ticket" 
+                                type="button"
                                 class="list-group-item list-group-item-action p-0"
-                                :class="{ active: activeListItem == index}"
-                                @click.prevent="changeActiveListItem(index)">
+                                :class="{ active: activeListItem == ticket.ID_ticket}"
+                                @click.prevent="openSelectedTicket(ticket.ID_ticket)">
                                 <div class="d-flex ">
                                     <li class="list-group-item border" style="width: 3.5%;">{{ticket.ID_ticket}}</li>
                                     <li class="list-group-item border" style="width: 16.1%;">{{ticket.NAME}}</li>
@@ -48,10 +51,11 @@
 
 <script>
 export default {
-    props: ["tickets","status","prioridades","userList"],
+    props: ["tickets","status","prioridades","userList","openSelectedTicket"],
     data() {
         return {
             activeListItem: -1,
+            idSelectedItem: -1,
             headers: ['Nombre','Estatus','Prioridad','Fecha','Creado por','Encargado']
         }
     },
@@ -72,7 +76,6 @@ export default {
             return this.prioridades.find((obj) => obj.ID_prio == id).tipoprio
         },
         findUserById(id) {
-            console.log(this.userList)
             return this.userList.find((obj) => obj.ID_usuario == id).nomusua
         }
     }
