@@ -38,7 +38,7 @@ export default {
     },
     methods: {
         async CreateTicket() {
-            await axios.post(`http://localhost:3000/tickets/`, { id: this.idLog, name: this.ticketName, description: this.ticketDescription, priority: this.ticketPriority, date: new Date().toISOString().split('T')[0] }).then(
+            await axios.post(`http://localhost:3000/tickets/`, { id: this.idLog, name: this.ticketName, description: this.ticketDescription, priority: this.ticketPriority, date: moment().format().slice(0, 19).replace('T', ' ') }).then(
                     (response) => {
                         return alert(`Usuario creado con exito`);
                     }).catch((error) =>{

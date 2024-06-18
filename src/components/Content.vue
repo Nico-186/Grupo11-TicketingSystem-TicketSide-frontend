@@ -24,6 +24,8 @@
             :status="listaEstatus"
             :prioridades="listaPrioridades"
             :user-list="userList"
+            :assignable-users="assignableUsers"
+            :is-open="activePage == 1.1"
             ></ticketView>
 
             <ticketForm
@@ -75,6 +77,7 @@ export default {
             listaEstatus: ['No existen estatus'],
             listaPrioridades: [],
             userList: [],
+            assignableUsers: [],
             selectedTicket: {}
         }
     },
@@ -112,6 +115,7 @@ export default {
                 (response) => {
                     if (JSON.stringify(response.data) != JSON.stringify([])) {
                         this.userList = response.data;
+                        this.findAssignableUsers();
                     }
                 }
             )
@@ -148,6 +152,13 @@ export default {
                 password: resData.Contraseña,
                 role: resData.rol
             } 
+        },
+        findAssignableUsers() {
+            this.userList.forEach((user) => {
+                if (Number(user.rol) > 0) {
+                    this.assignableUsers.push(user);
+                }
+            });
         }
     }
 }
