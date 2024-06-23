@@ -62,3 +62,4 @@ jobs:
           app-name: 'FrontendTicket'
           slot-name: 'Production'
           package: .
+          
