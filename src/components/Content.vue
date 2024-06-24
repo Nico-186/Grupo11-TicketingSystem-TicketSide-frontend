@@ -1,47 +1,38 @@
 <template>
-    <login v-if="!isLogged" ref="loginComponent" :try-loggin="(username, password) => tryLogIn(username, password)"></login>
-    <div class="d-flex flex-column container-fluid vh-100 p-0" :style=" isLogged ? '' : 'display: none;' ">
+    <login v-if="!isLogged" :try-loggin="(username, password) => tryLogIn(username, password)"></login>
+    <div v-if="isLogged" class="d-flex flex-column container-fluid vh-100 p-0" >
 
-        <sidebar ref="sidebar" :active-page="activePage" :role="loggedUser.role" :sidebar-click="(page) => activePage = page"></sidebar>
+        <sidebar ref="sidebar" :active-page="activePage" :role="loggedUser.role" :sidebar-click="(page) => loadData(page)"></sidebar>
+        <div id="content" class="container-fluid overflow-auto p-4 w-100 h-100">
 
-        <div v-if="isLogged" id="content" class="container-fluid overflow-auto"
-            :style="checkSidebar ? 'padding: 0% 0% 0% 17%;' : 'padding: 0%;'">
-
-            <ticketList
-            ref="adminUserList"
-            v-if="activePage == 1"
-            :tickets="ticketList"
-            :status="listaEstatus"
-            :prioridades="listaPrioridades"
+            <ticketList v-if="activePage == 1"
+            :ticket-list="ticketList"
+            :status-list="listaEstatus"
+            :priority-list="listaPrioridades"
             :user-list="userList"
             :open-selected-ticket="(ticketId) => showSelectedTicket(ticketId)" 
             ></ticketList>
 
-            <ticketView
-            v-if="activePage == 1.1"
-            :ticket="selectedTicket"
+            <ticketView v-if="activePage == 1.1"
             :logged-user="loggedUser"
-            :status="listaEstatus"
-            :prioridades="listaPrioridades"
+            :ticket="selectedTicket"
+            :status-list="listaEstatus"
+            :priority-list="listaPrioridades"
             :user-list="userList"
             :assignable-users="assignableUsers"
-            :is-open="activePage == 1.1"
             ></ticketView>
 
-            <ticketForm
-            v-if="activePage == 2"
-            :prioridades="listaPrioridades"
+            <ticketForm v-if="activePage == 2"
+            :priority-list="listaPrioridades"
             :id-log="loggedUser.id"
             ></ticketForm>
 
-            <priority
-            v-if="activePage == 3"
-            :prioridades="listaPrioridades"
+            <priority v-if="activePage == 3"
+            :all-priorities="listaPrioridades"
             ></priority>
 
-            <status
-            v-if="activePage == 4"
-            :status="listaEstatus"
+            <status v-if="activePage == 4"
+            :all-status="listaEstatus"
             ></status>
         </div>
     </div>
@@ -70,27 +61,14 @@ export default {
         status,
         priority
     },
-    computed: {
-        checkSidebar() {
-            if (this.mounted) {
-                return this.$refs.sidebar.dashboard;
-            } else {
-                return false;
-            }
-        }
-    },
     data() {
         return {
             activePage: 0,
             isLogged: false,
-            loggedUser: { role: -1 },
+            loggedUser: { id: -1, username: 'null', password: 'null', role: -1 },
             mounted: false,
-            ticketList: [{
-                ID_ticket: '',
-                NAME: 'No existen tickets',
-            }],
-            createNewUser: false,
-            listaEstatus: ['No existen estatus'],
+            ticketList: [],
+            listaEstatus: [],
             listaPrioridades: [],
             userList: [],
             assignableUsers: [],
@@ -101,59 +79,6 @@ export default {
         this.mounted = true
     },
     methods: {
-        tryLogIn: function (user, pass) {
-            axios.get(`http://localhost:3000/logindata/?username=${user}&password=${pass}`).then(
-                (response) => {
-                    if (JSON.stringify(response.data) == JSON.stringify([])) {
-                        alert("Usuario o contraseña incorrectos");
-                    } else {
-                        this.dataToLoggedUser(response.data[0]);
-                        this.isLogged = true;
-                        this.getTickets();
-                        this.getStatus();
-                        this.getPriority();
-                        this.getusernames();
-                    }
-                }
-            )
-        },
-        getTickets() {
-            axios.get(`http://localhost:3000/tickets`).then(
-                (response) => {
-                    if (JSON.stringify(response.data) != JSON.stringify([])) {
-                        this.ticketList = response.data;
-                    }
-                }
-            )
-        },
-        getusernames() {
-            axios.get(`http://localhost:3000/tickets/usernames`).then(
-                (response) => {
-                    if (JSON.stringify(response.data) != JSON.stringify([])) {
-                        this.userList = response.data;
-                        this.findAssignableUsers();
-                    }
-                }
-            )
-        },
-        getPriority() {
-            axios.get(`http://localhost:3000/priority`).then(
-                (response) => {
-                    if (JSON.stringify(response.data) != JSON.stringify([])) {
-                        this.listaPrioridades = response.data;
-                    }
-                }
-            )
-        },
-        getStatus() {
-            axios.get(`http://localhost:3000/status`).then(
-                (response) => {
-                    if (JSON.stringify(response.data) != JSON.stringify([])) {
-                        this.listaEstatus = response.data;
-                    }
-                }
-            )
-        },
         showSelectedTicket(ticketId) {
             this.selectedTicket = this.findTicketById(ticketId); 
             this.activePage = 1.1;
@@ -175,6 +100,83 @@ export default {
                     this.assignableUsers.push(user);
                 }
             });
+        },
+        async tryLogIn(user, pass) {
+            await axios.get(`${process.env.VUE_APP_BACKENDURL}/logindata/?username=${user}&password=${pass}`).then(
+                async (response) => {
+                    if (JSON.stringify(response.data) == JSON.stringify([])) {
+                        alert("Usuario o contraseña incorrectos");
+                    } else {
+                        this.dataToLoggedUser(response.data[0]);
+                        this.isLogged = true;
+                        this.loadData(1);
+                    }
+                }
+            )
+        },
+        async loadData(page) {
+            switch (page){
+                case 1:
+                    let wait1 = this.getTickets();
+                    let wait2 = this.getStatus();
+                    let wait3 = this.getPriority();
+                    let wait4 = this.getusernames();
+                    await wait1;
+                    await wait2;
+                    await wait3;
+                    await wait4;
+                    this.activePage = page;
+                    break;
+                case 2:
+                    await this.getPriority();
+                    this.activePage = page;
+                    break;
+                case 3:
+                    await this.getPriority();
+                    this.activePage = page;
+                    break;
+                case 4:
+                    await this.getStatus();
+                    this.activePage = page;
+                    break;
+            }
+        },
+        async getTickets() {
+            await axios.get(`${process.env.VUE_APP_BACKENDURL}/tickets`).then(
+                (response) => {
+                    if (JSON.stringify(response.data) != JSON.stringify([])) {
+                        this.ticketList = response.data;
+                    }
+                }
+            )
+        },
+        async getusernames() {
+            await axios.get(`${process.env.VUE_APP_BACKENDURL}/tickets/usernames`).then(
+                (response) => {
+                    if (JSON.stringify(response.data) != JSON.stringify([])) {
+                        this.userList = response.data;
+                        this.findAssignableUsers();
+                    }
+                }
+            )
+        },
+        async getPriority() {
+            await axios.get(`${process.env.VUE_APP_BACKENDURL}/priority`).then(
+                (response) => {
+                    if (JSON.stringify(response.data) != JSON.stringify([])) {
+                        this.listaPrioridades = response.data;
+                    }
+                }
+            )
+        },
+        async getStatus() {
+            await axios.get(`${process.env.VUE_APP_BACKENDURL}/status`).then(
+                (response) => {
+                    if (JSON.stringify(response.data) != JSON.stringify([])) {
+                        this.listaEstatus = response.data;
+                    }
+                }
+            )
         }
     }
 }
