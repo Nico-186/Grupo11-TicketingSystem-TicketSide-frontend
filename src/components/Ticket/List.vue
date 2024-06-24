@@ -7,7 +7,7 @@
         <div class="flex-grow-1 d-flex flex-column border w-100" style="background-color: #171a1c; min-height: 0;">
             <p class="w-100 mb-0 px-3 py-2 fs-5">Tickets</p>
             <div class="list-group">
-                <div class="d-flex" :class="ticketList.length >= 11 ? 'pe-3' : 'pe-0'">
+                <div class="d-flex" :class="ticketsToShow.length >= 11 ? 'pe-3' : 'pe-0'">
                     <li class="list-group-item border" style="width: 3.5%;">Id</li>
                     <li v-for="header in headers" class="list-group-item border" style="width: 16.1%;">{{ header }}</li>
                 </div>
@@ -15,7 +15,7 @@
             <div class="flex-grow-1 w-100 overflow-auto">
                 <div class="list-group">
                     <ul class="list-group">
-                        <button v-if="ticketList.length != 0" v-for="ticket in ticketList" :id="ticket.ID_ticket" type="button"
+                        <button v-if="ticketsToShow.length != 0" v-for="ticket in ticketsToShow" :id="ticket.ID_ticket" type="button"
                             class="list-group-item list-group-item-action p-0"
                             @click.prevent="openSelectedTicket(ticket.ID_ticket)">
                             <div class="d-flex bg-transparent">
@@ -30,8 +30,8 @@
                                 </li>
                             </div>
                         </button>
-                        <div v-if="ticketList.length == 0" class="d-flex w-100">
-                            <li class="list-group-item border w-100">No existen tickets</li>
+                        <div v-if="ticketsToShow.length == 0" class="d-flex w-100">
+                            <li class="list-group-item border w-100">No existen tickets para mostrar</li>
                          </div>
                     </ul>
                 </div>
@@ -42,11 +42,15 @@
 
 <script>
 export default {
-    props: ["ticketList", "statusList", "priorityList", "userList", "openSelectedTicket"],
+    props: ["ticketList", "statusList", "priorityList", "userList", "openSelectedTicket", "loggedUser"],
     data() {
         return {
-            headers: ['Asunto', 'Estatus', 'Prioridad', 'Fecha de publicación', 'Creado por', 'Encargado']
+            headers: ['Asunto', 'Estatus', 'Prioridad', 'Fecha de publicación', 'Creado por', 'Encargado'],
+            ticketsToShow: [] 
         }
+    },
+    mounted() {
+        this.roleBasedList();
     },
     methods: {
         findStatusById(id) {
@@ -57,6 +61,16 @@ export default {
         },
         findUserById(id) {
             return this.userList.find((obj) => obj.ID_usuario == id)
+        },
+        roleBasedList() {
+            if (this.loggedUser.role == 0){
+                this.ticketsToShow = this.ticketList.filter(this.isFromUserLogged);
+            } else {
+                this.ticketsToShow = this.ticketList;
+            }
+        },
+        isFromUserLogged(ticket){
+            return ticket.IDusuario == this.loggedUser.id;
         }
     }
 }

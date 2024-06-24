@@ -1,8 +1,6 @@
 <template>
-    <div data-bs-theme="dark"> 
-        <content>
-        </content>
-    </div>
+    <content>
+    </content>
 </template>
 
 <script>

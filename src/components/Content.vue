@@ -10,7 +10,8 @@
             :status-list="listaEstatus"
             :priority-list="listaPrioridades"
             :user-list="userList"
-            :open-selected-ticket="(ticketId) => showSelectedTicket(ticketId)" 
+            :open-selected-ticket="(ticketId) => showSelectedTicket(ticketId)"
+            :logged-user="loggedUser"
             ></ticketList>
 
             <ticketView v-if="activePage == 1.1"
@@ -29,10 +30,12 @@
 
             <priority v-if="activePage == 3"
             :all-priorities="listaPrioridades"
+            :all-tickets="ticketList"
             ></priority>
 
             <status v-if="activePage == 4"
             :all-status="listaEstatus"
+            :all-tickets="ticketList"
             ></status>
         </div>
     </div>
@@ -107,7 +110,7 @@ export default {
                     if (JSON.stringify(response.data) == JSON.stringify([])) {
                         alert("Usuario o contraseña incorrectos");
                     } else {
-                        this.dataToLoggedUser(response.data[0]);
+                        this.dataToLoggedUser(response.data[0][0]);
                         this.isLogged = true;
                         this.loadData(1);
                     }
@@ -145,7 +148,7 @@ export default {
             await axios.get(`${process.env.VUE_APP_BACKENDURL}/tickets`).then(
                 (response) => {
                     if (JSON.stringify(response.data) != JSON.stringify([])) {
-                        this.ticketList = response.data;
+                        this.ticketList = response.data[0];
                     }
                 }
             )
@@ -154,7 +157,7 @@ export default {
             await axios.get(`${process.env.VUE_APP_BACKENDURL}/tickets/usernames`).then(
                 (response) => {
                     if (JSON.stringify(response.data) != JSON.stringify([])) {
-                        this.userList = response.data;
+                        this.userList = response.data[0];
                         this.findAssignableUsers();
                     }
                 }
@@ -164,7 +167,7 @@ export default {
             await axios.get(`${process.env.VUE_APP_BACKENDURL}/priority`).then(
                 (response) => {
                     if (JSON.stringify(response.data) != JSON.stringify([])) {
-                        this.listaPrioridades = response.data;
+                        this.listaPrioridades = response.data[0];
                     }
                 }
             )
@@ -173,7 +176,7 @@ export default {
             await axios.get(`${process.env.VUE_APP_BACKENDURL}/status`).then(
                 (response) => {
                     if (JSON.stringify(response.data) != JSON.stringify([])) {
-                        this.listaEstatus = response.data;
+                        this.listaEstatus = response.data[0];
                     }
                 }
             )

@@ -8,25 +8,54 @@
                 <label>Usuario</label>
                 <input v-model="username" type="text" class="form-control" placeholder="Ingrese su usuario">
             </div>
-            <password ref="passInput" text="Contraseña" placeholder-text="Ingrese su contraseña"></password>
-            <button type="button" class="btn btn-secondary"
-                @click.prevent="setValues(); tryLoggin(username, password)">Ingresar</button>
+
+            <div>
+                <label>Contraseña</label>
+                <div class="row w-100 g-0">
+                    <div class="col p-0">
+                        <input v-model="password" :type="passwordType.type" class="form-control" placeholder="Ingrese su contraseña">
+                    </div>
+                    <div class="col-auto p-0">
+                        <button type="button" class="btn btn-secondary"
+                            @click.prevent="isPassword = !isPassword">{{passwordType.text}}</button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button"
+            class="btn btn-secondary"
+            :disabled="username.trim() == '' || password == ''"
+            @click.prevent="tryLoggin(username, password)">
+                Ingresar
+            </button>
         </div>
         <div class="row" style="height: 10%"></div>
     </div>
 </template>
 
 <script>
-import password from './Utils/Password.vue';
-
 export default {
     props: ['tryLoggin'],
-    components: {
-        password
+    computed: {
+        passwordType() {
+            if (this.isPassword) {
+                return {
+                    type: 'password',
+                    text: 'Mostrar'
+                }
+            } else {
+                return {
+                    type: 'text',
+                    text: 'Ocultar'
+                }
+            }
+        },
     },
-    methods: {
-        setValues() {
-            this.password = this.$refs.passInput.password;
+    data() {
+        return {
+            username: '',
+            password: '',
+            isPassword: true
         }
     }
 }

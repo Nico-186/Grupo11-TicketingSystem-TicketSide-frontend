@@ -1,5 +1,4 @@
 <template>
-
         <div class="d-flex flex-column align-items-center gap-4 mt-2" style="padding-left:15%; padding-right: 15%">
 
             <div class="d-flex justify-content-center w-100">
@@ -25,10 +24,15 @@
             <div class="w-100">
                 <label>Descripción</label>
                 <textarea v-model="ticketDescription" type="text" class="form-control"
-                    placeholder="Descripción del problema" rows="8"></textarea>
+                    placeholder="Descripción del problema" rows="8">
+                </textarea>
             </div>
-            <button type="button" class="btn btn-success w-100" @click.prevent="CreateTicket()">Crear
-                ticket</button>
+            <button type="button"
+            class="btn btn-success w-100"
+            :disabled="ticketName.trim() == '' || ticketDescription.trim() == '' || ticketPriority == ''"
+            @click.prevent="CreateTicket()">
+                Crear ticket
+            </button>
         </div>
 </template>
 
@@ -44,14 +48,21 @@ export default {
     },
     methods: {
         async CreateTicket() {
-            await axios.post(`${process.env.VUE_APP_BACKENDURL}/tickets/`, { id: this.idLog, name: this.ticketName, description: this.ticketDescription, priority: this.ticketPriority, date: new Date().toISOString().replace('T', ' ').replace('Z', ' ') }).then(
-                    (response) => {
-                        alert(`Ticket publicado con éxito`);
-                        this.ticketName = "";
-                        this.ticketDescription = "";
-                        this.ticketPriority = "";
+            await axios.post(`${process.env.VUE_APP_BACKENDURL}/tickets/`, { id: this.idLog, name: this.ticketName.trim(), description: this.ticketDescription.trim(), priority: this.ticketPriority, date: new Date().toISOString().replace('T', ' ').replace('Z', ' ') }).then(
+                    async (response) => {
+                        await this.$parent.getTickets();
+                        console.log(this.$parent.ticketList)
+                        await axios.post(`${process.env.VUE_APP_BACKENDURL}/time/`, { status: 1, start: new Date().toISOString().replace('T', ' ').replace('Z', ' '), ticket: (this.$parent.ticketList[this.$parent.ticketList.length - 1]).ID_ticket }).then(
+                            (response) => {
+                                alert(`Ticket publicado con éxito`);
+                                this.ticketName = "";
+                                this.ticketDescription = "";
+                                this.ticketPriority = "";
+                            }).catch((error) =>{
+                                return alert(error);
+                            })
                     }).catch((error) =>{
-                        return alert(`Ha surgido un error al publicar el ticket`);
+                        return alert(error);
                     })
         }
     }

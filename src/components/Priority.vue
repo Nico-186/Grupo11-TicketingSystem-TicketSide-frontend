@@ -28,6 +28,7 @@
         <div class="d-flex flex-column align-items-center w-50 gap-2">
             <button type="button"
             class="btn btn-success w-100"
+            :disabled="selectedPriorityName.trim() == '' || selectedPriorityName.trim() == oldPriorityName"
             @click="postPriority()">
                 {{ selectedPriorityID == -1 ? 'Crear Prioridad' : 'Guardar prioridad' }}
             </button>
@@ -43,9 +44,10 @@
 
 <script>
 export default {
-    props: ["allPriorities"],
+    props: ["allPriorities","allTickets"],
     data() {
         return {
+            oldPriorityName: '',
             selectedPriorityID: -1,
             selectedPriorityName: '',
             priorityList: []
@@ -57,12 +59,13 @@ export default {
     methods: {
         setPriorityName(name) {
             this.selectedPriorityName = name;
+            this.oldPriorityName = name;
         },
         getPriority() {
             axios.get(`${process.env.VUE_APP_BACKENDURL}/priority`).then(
                 (response) => {
                     if (JSON.stringify(response.data) != JSON.stringify([])) {
-                        this.priorityList = response.data;
+                        this.priorityList = response.data[0];
                     }
                 }
             )
@@ -91,15 +94,20 @@ export default {
             }
         },
         async deletePriority() {
-            await axios.delete(`${process.env.VUE_APP_BACKENDURL}/priority/?id=${this.selectedPriorityID}`).then(
-                (response) => {
-                    this.selectedPriorityID = -1;
-                    this.selectedPriorityName = '';
-                    this.getPriority();
-                    return alert(`Prioridad eliminada con éxito`);
-                }).catch((error) => {
-                    return alert('Ha surgido un error al eliminar la prioridad');
-                })
+            let ticketUsingPriority = this.allTickets.find((obj) => obj.IDprio == this.selectedPriorityID)
+            if(ticketUsingPriority != undefined){
+                return alert('No se puede eliminar, puesto que al menos un ticket es de esta prioridad');
+            } else {
+                await axios.put(`${process.env.VUE_APP_BACKENDURL}/priority/delete/?id=${this.selectedPriorityID}`).then(
+                    (response) => {
+                        this.selectedPriorityID = -1;
+                        this.selectedPriorityName = '';
+                        this.getPriority();
+                        return alert(`Prioridad eliminada con éxito`);
+                    }).catch((error) => {
+                        return alert('Ha surgido un error al eliminar la prioridad');
+                    })
+            }
         }
     }
 }

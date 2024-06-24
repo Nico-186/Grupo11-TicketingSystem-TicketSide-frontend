@@ -7,13 +7,16 @@
 
             <div class="d-flex flex-column w-auto">
                 <label>Encargado:</label>
+                <p v-if="interactPrivileges == 0" class="form-control m-0">{{ ticket.IDencargado != null ? findUserById(ticket.IDencargado).nomusua : 'Sin asignar' }}</p>
 
-                <p v-if="viewRoleBased() == 0" class="form-control m-0">AAAAA</p>
+                <button v-if="interactPrivileges == 1" class="btn btn-success" :disabled="ticket.IDencargado != null" @click="newAssinedTo = this.loggedUser.id">Adjudicar Ticket</button>
 
-                <button v-if="viewRoleBased() == 1" class="btn btn-secondary">AAAAA</button>
+                <button v-if="interactPrivileges == 2" class="btn btn-danger" :disabled="ticket.IDencargado != newAssinedTo" @click="newAssinedTo = null">Abandonar Ticket</button>
 
-                <select v-model="newAssinedTo" v-if="viewRoleBased() == 2"
-                    class="text-reset btn btn-outline-secondary text-start" style="background-color: #212529">
+                <select v-if="this.loggedUser.role == 2"
+                v-model="newAssinedTo"
+                class="text-reset btn btn-outline-secondary text-start" 
+                style="background-color: #212529">
                     <option :value="null" selected>Sin asignar</option>
                     <option v-for="user in assignableUsers" 
                     style="background-color: #212529;" 
@@ -39,7 +42,11 @@
         <div class="d-flex justify-content-center w-100 gap-4">
             <div class="w-50">
                 <label>Prioridad</label>
-                <select v-model="newPriority"
+                
+                <p v-if="interactPrivileges == 0 || interactPrivileges == 1" class="form-control m-0">{{ findPriorityById(ticket.IDprio).tipoprio }}</p>
+
+                <select v-if="this.loggedUser.role == 2 || interactPrivileges == 2" 
+                v-model="newPriority"
                 class="text-reset btn btn-outline-secondary text-start w-100"
                 style="background-color: #212529">
                     <option v-for="prioridad in priorityList"
@@ -48,10 +55,13 @@
                     :selected="ticket.IDprio == prioridad.ID_prio">
                         {{ prioridad.tipoprio }}</option>
                 </select>
+
             </div>
-            <div class="w-50">
+            <div class="w-25">
                 <label>Estatus</label>
-                <select v-model="newStatus"
+                <p v-if="interactPrivileges == 0 || interactPrivileges == 1" class="form-control m-0">{{ findStatusById(ticket.IDstatus).tipostatus }}</p>
+                <select v-if="this.loggedUser.role == 2 || interactPrivileges == 2"
+                v-model="newStatus"
                 class="text-reset btn btn-outline-secondary text-start w-100"
                 style="background-color: #212529">
                     <option v-for="status in statusList"
@@ -60,6 +70,10 @@
                     :selected="ticket.IDstatus == status.ID_status">
                         {{ status.tipostatus }}</option>
                 </select>
+            </div>
+            <div class="w-25">
+                <label>Tiempo transcurrido en {{ findStatusById(newStatus).tipostatus }}</label>
+                <p class="form-control m-0">{{ findStatusById(this.newStatus).statusFinal.data[0] == 1 ? 'Ticket Finalizado' : getElapsedTime() }}</p>
             </div>
         </div>
 
@@ -115,7 +129,21 @@
                             disabled></textarea>
                         </div>
                     </div>
-                    <div class="d-flex justify-content-end">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <button v-if="loggedUser.role != 0"
+                            :class="comment.final.data[0] == 1 ? 'btn-outline-secondary' : 'btn-secondary'"
+                            class="btn h-auto"
+                            @click.prevent="updateComment(comment.ID_coment,0,comment.final.data[0] == 1 ? 0 : 1)">
+                                Principal
+                            </button>
+                        </div>
+                        <button v-if="loggedUser.id == comment.IDusuario"
+                        :class="comment.interno.data[0] == 1 ? 'btn-outline-secondary' : 'btn-secondary'"
+                        class="btn h-auto"
+                        @click.prevent="updateComment(comment.ID_coment,comment.interno.data[0] == 1 ? 0 : 1,0)">
+                            Interno
+                        </button>
                         <button v-if="loggedUser.id == comment.IDusuario"
                         class="btn btn-danger h-auto"
                         @click.prevent="deleteComment(comment.ID_coment)">
@@ -138,55 +166,123 @@ export default {
             newPriority: this.ticket.IDprio,
             newStatus: this.ticket.IDstatus,
             comments: [],
+            allComments: [],
             newComment: '',
-            roles: ['Usuario', 'Tecnico', 'Administrador']
+            roles: ['Usuario', 'Tecnico', 'Administrador'],
+            interactPrivileges: -1,
+            time: ''
         }
     },
-    mounted() {
-        this.getComments();
+    async mounted() {
+        await this.getTime();
+        await this.getComments();
+        this.getCommentsToShow();
+        if (this.loggedUser.role != 2){
+            this.getInteractPrivileges();
+        }
     },
     methods: {
-        viewRoleBased() {
+        getElapsedTime() {
+
+            let elapsedTimeMS = new Date() - new Date(this.time.inicio);
+
+            let days = Math.abs(elapsedTimeMS/(1000*60*60*24))
+            let hours = Math.abs((days - Math.floor(days)) * 24);
+            let minutes = Math.abs((hours - Math.floor(hours)) * 60);
+
+            return `${Math.floor(days)} días, ${Math.floor(hours)}:${Math.floor(minutes)} horas`;
+        },
+        getCommentsToShow() {
+            this.comments = [];
+            let finalComment = this.allComments.find((obj) => obj.final.data[0] == 1)
+            if (finalComment != undefined) {
+                this.allComments.splice(this.allComments.indexOf(finalComment),1);
+                this.comments.push(finalComment);
+            }
+
+            if (this.loggedUser.role == 0) {
+                this.comments.push(...this.allComments.filter(function (comment) {
+                    return comment.interno.data[0] != 1;
+                }));
+            } else {
+                this.comments.push(...this.allComments);
+            }
+        },
+        getInteractPrivileges() {
             switch (this.loggedUser.role) {
                 case '0':
-                    return 0;
+                    return this.interactPrivileges = 0;
                 case '1':
-                    if (this.ticket.IDencargado != this.loggedUser.id && this.ticket.IDencargado != null) {
-                        return 0;
+                    if (this.ticket.IDencargado == null) {
+                        return this.interactPrivileges = 1;
+                    } else {
+                        if (this.ticket.IDencargado == this.loggedUser.id) {
+                            return this.interactPrivileges = 2;
+                        } else {
+                            return this.interactPrivileges = 0;
+                        }
                     }
-                    return 1;
-                case '2':
-                    return 2;
             }
         },
         findUserById(id) {
             return this.userList.find((obj) => obj.ID_usuario == id);
         },
+        findPriorityById(id) {
+            return this.priorityList.find((obj) => obj.ID_prio == id)
+        },
+        findStatusById(id) {
+            return this.statusList.find((obj) => obj.ID_status == id)
+        },
         async postComment() {
             await axios.post(`${process.env.VUE_APP_BACKENDURL}/comments/`, { ticketid: this.ticket.ID_ticket, text: this.newComment, userid: this.loggedUser.id, date: new Date().toISOString().replace('T', ' ').replace('Z', ' ') }).then(
-                (response) => {
+                async (response) => {
                     this.newComment = '';
-                    this.getComments();
+                    await this.getComments();
+                    this.getCommentsToShow();
                 }).catch((error) => {
                     return alert(`Ha surgido un error al realizar el comentario`);
                 })
         },
-        getComments() {
-            axios.get(`${process.env.VUE_APP_BACKENDURL}/comments/?id=${this.ticket.ID_ticket}`).then(
+        async getTime() {
+            await axios.get(`${process.env.VUE_APP_BACKENDURL}/time/?idstatus=${this.newStatus}&idticket=${this.ticket.ID_ticket}`).then(
                 (response) => {
-                    this.comments = response.data;
+                    console.log(response.data)
+                    this.time = response.data[0][0];
+                }
+            )
+        },
+        async getComments() {
+            await axios.get(`${process.env.VUE_APP_BACKENDURL}/comments/?id=${this.ticket.ID_ticket}`).then(
+                (response) => {
+                    this.allComments = response.data[0];
                 }
             )
         },
         async deleteComment(commentId) {
-            await axios.delete(`${process.env.VUE_APP_BACKENDURL}/comments/?id=${commentId}`).then(
+            await axios.put(`${process.env.VUE_APP_BACKENDURL}/comments/delete/?id=${commentId}`).then(
                 async (response) => {
                     await this.getComments();
+                    this.getCommentsToShow();
+                }).catch((error) => {
+                    return alert('Ha surgido un error al eliminar el comentario');
+                })
+        },
+        async updateComment(commentId, isInternal, isFinal) {
+            await axios.put(`${process.env.VUE_APP_BACKENDURL}/comments/?id=${commentId}`, { interno: isInternal, final: isFinal}).then(
+                async (response) => {
+                    await this.getComments();
+                    this.getCommentsToShow();
                 }).catch((error) => {
                     return alert('Ha surgido un error al eliminar el comentario');
                 })
         },
         async updateTicket() {
+            if (this.newStatus != this.ticket.IDstatus){
+                await axios.put(`${process.env.VUE_APP_BACKENDURL}/time/?id=${this.time.ID_tiempo}`, { end: new Date().toISOString().replace('T', ' ').replace('Z', ' ') })
+                if (this.findStatusById(this.newStatus).statusFinal.data[0] != 1){
+                    await axios.post(`${process.env.VUE_APP_BACKENDURL}/time/`, { status: this.newStatus, start: new Date().toISOString().replace('T', ' ').replace('Z', ' '), ticket: this.time.ID_ticket })
+                }
+            }
             await axios.put(`${process.env.VUE_APP_BACKENDURL}/tickets/?id=${this.ticket.ID_ticket}`, { idencargado: this.newAssinedTo, idstatus: this.newStatus, idprioridad: this.newPriority }).then(
                 (response) => {
                     alert(`Ticket actualizado con éxito`);
