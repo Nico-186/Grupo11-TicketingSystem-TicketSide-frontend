@@ -82,7 +82,7 @@ export default {
         isFirstLogin(){
             if (this.loggedUser.isFirst == 1) {
                 cookies.set('loggedUser', { ID_usuario: this.loggedUser.id, justCreated: { data: [this.loggedUser.isFirst] } }, '30min');
-                window.location.href = 'http://localhost:8080/';
+                window.location.href = process.env.VUE_APP_REDIRECT;
             }
         },
         showSelectedTicket(ticketId) {

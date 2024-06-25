@@ -3,7 +3,7 @@
         <div class="d-flex justify-content-start gap-4 container-fluid">
             <a class="m-0 h2 py-3" style="text-decoration: none;">MeowAssist Tickets</a>
             <a v-for="link in links(Number(loggedUser.role))" class="nav-link fs-6 py-2" :class="{ active: activePage >= link.page && activePage < link.page + 1 }" href="#" @click.prevent="sidebarClick(link.page)">{{link.text}}</a>
-            <a class="nav-link fs-6 py-2" href="http://localhost:8080/" @click="test()">Usuarios</a>
+            <a class="nav-link fs-6 py-2" :href="process.env.VUE_APP_REDIRECT" @click="test()">Usuarios</a>
         </div>
     </nav>
 </template>
