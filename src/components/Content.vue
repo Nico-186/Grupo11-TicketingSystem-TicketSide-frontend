@@ -2,7 +2,7 @@
     <login v-if="!isLogged" :try-loggin="(username, password) => tryLogIn(username, password)"></login>
     <div v-if="isLogged" class="d-flex flex-column container-fluid vh-100 p-0" >
 
-        <sidebar ref="sidebar" :active-page="activePage" :role="loggedUser.role" :sidebar-click="(page) => loadData(page)"></sidebar>
+        <sidebar ref="sidebar" :active-page="activePage" :logged-user="loggedUser" :sidebar-click="(page) => loadData(page)"></sidebar>
         <div id="content" class="container-fluid overflow-auto p-4 w-100 h-100">
 
             <ticketList v-if="activePage == 1"
@@ -43,6 +43,7 @@
 </template>
 
 <script>
+import cookies from 'vue-cookies';
 import login from './Login.vue';
 import sidebar from './Sidebar.vue';
 
@@ -69,7 +70,6 @@ export default {
             activePage: 0,
             isLogged: false,
             loggedUser: { id: -1, username: 'null', password: 'null', role: -1 },
-            mounted: false,
             ticketList: [],
             listaEstatus: [],
             listaPrioridades: [],
@@ -78,10 +78,13 @@ export default {
             selectedTicket: {}
         }
     },
-    mounted() {
-        this.mounted = true
-    },
     methods: {
+        isFirstLogin(){
+            if (this.loggedUser.isFirst == 1) {
+                cookies.set('loggedUser', { ID_usuario: this.loggedUser.id, justCreated: { data: [this.loggedUser.isFirst] } }, '30min');
+                window.location.href = 'http://localhost:8080/';
+            }
+        },
         showSelectedTicket(ticketId) {
             this.selectedTicket = this.findTicketById(ticketId); 
             this.activePage = 1.1;
@@ -90,11 +93,13 @@ export default {
             return this.ticketList.find((obj) => obj.ID_ticket == id)
         },
         dataToLoggedUser(resData) {
+            console.log(resData)
             this.loggedUser = {
                 id: resData.ID_usuario,
                 username: resData.nomusua,
                 password: resData.Contraseña,
-                role: resData.rol
+                role: resData.rol,
+                isFirst: resData.justCreated.data[0]
             } 
         },
         findAssignableUsers() {
@@ -107,11 +112,12 @@ export default {
         async tryLogIn(user, pass) {
             await axios.get(`${process.env.VUE_APP_BACKENDURL}/logindata/?username=${user}&password=${pass}`).then(
                 async (response) => {
-                    if (JSON.stringify(response.data) == JSON.stringify([])) {
+                    if (JSON.stringify(response.data[0]) == JSON.stringify([])) {
                         alert("Usuario o contraseña incorrectos");
                     } else {
                         this.dataToLoggedUser(response.data[0][0]);
                         this.isLogged = true;
+                        this.isFirstLogin();
                         this.loadData(1);
                     }
                 }
