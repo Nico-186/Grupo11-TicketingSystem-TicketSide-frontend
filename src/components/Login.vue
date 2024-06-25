@@ -1,6 +1,6 @@
 <template>
     <div class="d-flex flex-column align-items-center container-fluid vh-100 p-0 m-0">
-        <div class="row align-items-center justify-content-center w-100" style="height: 10%; background-color: #426A39;">
+        <div class="row align-items-center justify-content-center w-100" style="height: 10%; background-color: #783582;">
             <h2 class="w-auto m-0">MeowAssist</h2>
         </div>
         <div class="flex-grow-1 d-flex flex-column justify-content-center gap-4 w-50">
