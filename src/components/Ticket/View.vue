@@ -125,7 +125,7 @@
                             <button v-if="loggedUser.role != 0"
                             :class="comment.final.data[0] == 1 ? 'btn-outline-secondary' : 'btn-secondary'"
                             class="btn h-auto"
-                            @click.prevent="updateComment(comment.ID_coment,0,comment.final.data[0] == 1 ? 0 : 1)">
+                            @click.prevent="removeFirst(ticket.ID_ticket),updateComment(comment.ID_coment,0,comment.final.data[0] == 1 ? 0 : 1)">
                                 Final
                             </button>
                         </div>
@@ -279,6 +279,12 @@ export default {
                     this.getCommentsToShow();
                 }).catch((error) => {
                     return alert('Ha surgido un error al eliminar el comentario');
+                })
+        },
+        async removeFirst(commentId){
+            await axios.put(`${process.env.VUE_APP_BACKENDURL_TICKET}/comments/final/?id=${commentId}`).then(
+                async (response) => {
+                }).catch((error) => {
                 })
         },
         async updateComment(commentId, isInternal, isFinal) {
