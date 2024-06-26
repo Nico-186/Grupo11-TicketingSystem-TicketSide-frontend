@@ -3,6 +3,49 @@
         <div>
             <label>Buscar ticket</label>
             <input type="text" class="form-control" placeholder="Búsqueda">
+            <div class="d-flex gap-2 pt-2">
+                <select v-model="selectedStatusID"
+                class="text-reset btn btn-outline-secondary text-start w-25"
+                style="background-color: #212529">
+                    <option :value="-1" selected>Estatus</option>
+                    <option v-for="status in statusList"
+                    style="background-color: #212529;"
+                    :value="status.ID_status">
+                        {{ status.tipostatus }}
+                    </option>
+                </select>
+                <select v-model="selectedPriorityID"
+                class="text-reset btn btn-outline-secondary text-start w-25"
+                style="background-color: #212529">
+                    <option :value="-1" selected>Prioridad</option>
+                    <option v-for="prioridad in priorityList"
+                    style="background-color: #212529;"
+                    :value="prioridad.ID_prio">
+                        {{ prioridad.tipoprio }}
+                    </option>
+                </select>
+                <select v-model="selectedPriorityID"
+                class="text-reset btn btn-outline-secondary text-start w-25"
+                style="background-color: #212529">
+                    <option :value="-1" selected>Creado por</option>
+                    <option v-for="prioridad in priorityList"
+                    style="background-color: #212529;"
+                    :value="prioridad.ID_prio">
+                        {{ prioridad.tipoprio }}
+                    </option>
+                </select>
+                <select v-model="selectedPriorityID"
+                class="text-reset btn btn-outline-secondary text-start w-25"
+                style="background-color: #212529">
+                    <option :value="-1" selected>Encargado</option>
+                    <option v-for="prioridad in priorityList"
+                    style="background-color: #212529;"
+                    :value="prioridad.ID_prio">
+                        {{ prioridad.tipoprio }}
+                    </option>
+                </select>
+                <button class="btn btn-secondary">Buscar</button>
+            </div>
         </div>
         <div class="flex-grow-1 d-flex flex-column border w-100" style="background-color: #171a1c; min-height: 0;">
             <p class="w-100 mb-0 px-3 py-2 fs-5">Tickets</p>
@@ -46,7 +89,9 @@ export default {
     data() {
         return {
             headers: ['Asunto', 'Estatus', 'Prioridad', 'Fecha de publicación', 'Creado por', 'Encargado'],
-            ticketsToShow: [] 
+            ticketsToShow: [],
+            selectedPriorityID: -1,
+            selectedStatusID: -1
         }
     },
     mounted() {

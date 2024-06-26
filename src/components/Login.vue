@@ -1,7 +1,10 @@
 <template>
     <div class="d-flex flex-column align-items-center container-fluid vh-100 p-0 m-0">
-        <div class="row align-items-center justify-content-center w-100" style="height: 10%; background-color: #783582;">
-            <h2 class="w-auto m-0">MeowAssist</h2>
+        <div class="d-flex align-items-center justify-content-center w-100 gap-2 py-2" style="background-color: #783582;">
+            <h2 class="w-auto m-0 py-3">MeowAssist</h2>
+            <div class="w-auto" style="max-width: 1.8em;">
+                <img src="../Logo.png" style="max-width: 100%;">
+            </div>
         </div>
         <div class="flex-grow-1 d-flex flex-column justify-content-center gap-4 w-50">
             <div>

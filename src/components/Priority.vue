@@ -62,7 +62,7 @@ export default {
             this.oldPriorityName = name;
         },
         getPriority() {
-            axios.get(`${process.env.VUE_APP_BACKENDURL}/priority`).then(
+            axios.get(`${process.env.VUE_APP_BACKENDURL_TICKET}/priority`).then(
                 (response) => {
                     if (JSON.stringify(response.data) != JSON.stringify([])) {
                         this.priorityList = response.data[0];
@@ -72,7 +72,7 @@ export default {
         },
         async postPriority() {
             if (this.selectedPriorityID == -1) {
-                await axios.post(`${process.env.VUE_APP_BACKENDURL}/priority/`, { name: this.selectedPriorityName }).then(
+                await axios.post(`${process.env.VUE_APP_BACKENDURL_TICKET}/priority/`, { name: this.selectedPriorityName }).then(
                     (response) => {
                         this.selectedPriorityID = -1;
                         this.selectedPriorityName = '';
@@ -82,7 +82,7 @@ export default {
                         return alert('Ha surgido un error al crear la prioridad');
                     })
             } else {
-                await axios.put(`${process.env.VUE_APP_BACKENDURL}/priority/?id=${this.selectedPriorityID}`, { name: this.selectedPriorityName }).then(
+                await axios.put(`${process.env.VUE_APP_BACKENDURL_TICKET}/priority/?id=${this.selectedPriorityID}`, { name: this.selectedPriorityName }).then(
                     (response) => {
                         this.selectedPriorityID = -1;
                         this.selectedPriorityName = '';
@@ -98,7 +98,7 @@ export default {
             if(ticketUsingPriority != undefined){
                 return alert('No se puede eliminar, puesto que al menos un ticket es de esta prioridad');
             } else {
-                await axios.put(`${process.env.VUE_APP_BACKENDURL}/priority/delete/?id=${this.selectedPriorityID}`).then(
+                await axios.put(`${process.env.VUE_APP_BACKENDURL_TICKET}/priority/delete/?id=${this.selectedPriorityID}`).then(
                     (response) => {
                         this.selectedPriorityID = -1;
                         this.selectedPriorityName = '';

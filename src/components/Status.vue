@@ -74,7 +74,7 @@ export default {
             this.oldStatusName = name;
         },
         getStatus() {
-            axios.get(`${process.env.VUE_APP_BACKENDURL}/status`).then(
+            axios.get(`${process.env.VUE_APP_BACKENDURL_TICKET}/status`).then(
                 (response) => {
                     if (JSON.stringify(response.data) != JSON.stringify([])) {
                         this.statusList = response.data[0];
@@ -88,7 +88,7 @@ export default {
         },
         async postStatus() {
             if (this.selectedStatusID == -1) {
-                await axios.post(`${process.env.VUE_APP_BACKENDURL}/status/`, { name: this.selectedStatusName.trim(), isfinal: this.isFinished ? 1 : 0 }).then(
+                await axios.post(`${process.env.VUE_APP_BACKENDURL_TICKET}/status/`, { name: this.selectedStatusName.trim(), isfinal: this.isFinished ? 1 : 0 }).then(
                     (response) => {
                         this.selectedStatusID= -1;
                         this.selectedStatusName = '';
@@ -99,7 +99,7 @@ export default {
                         return alert('Ha surgido un error al crear el estatus');
                     })
             } else {
-                await axios.put(`${process.env.VUE_APP_BACKENDURL}/status/?id=${this.selectedStatusID}`, { name: this.selectedStatusName.trim(), isfinal: this.isFinished ? 1 : 0 }).then(
+                await axios.put(`${process.env.VUE_APP_BACKENDURL_TICKET}/status/?id=${this.selectedStatusID}`, { name: this.selectedStatusName.trim(), isfinal: this.isFinished ? 1 : 0 }).then(
                     (response) => {
                         this.selectedStatusID= -1;
                         this.selectedStatusName = '';
@@ -116,7 +116,7 @@ export default {
             if(ticketUsingStatus != undefined){
                 return alert('No se puede eliminar, puesto que al menos un ticket se encuentra actualmente en este estado');
             } else {
-                await axios.put(`${process.env.VUE_APP_BACKENDURL}/status/delete/?id=${this.selectedStatusID}`).then(
+                await axios.put(`${process.env.VUE_APP_BACKENDURL_TICKET}/status/delete/?id=${this.selectedStatusID}`).then(
                     (response) => {
                         this.selectedStatusID = -1;
                         this.selectedStatusName = '';
