@@ -94,7 +94,7 @@ export default {
         async updateFirst(){
             await axios.put(`${process.env.VUE_APP_BACKENDURL_USER}/admin/allusers/firstloggin/?id=${this.user.id}`).then(
                 (response) => {
-                    window.location.href = location.reload();
+                    window.history.go('/');
                 }).catch((error) =>{
                     return alert(error);
                 })
