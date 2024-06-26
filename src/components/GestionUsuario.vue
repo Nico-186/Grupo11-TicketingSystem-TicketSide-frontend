@@ -81,7 +81,6 @@ export default {
     },
     mounted() {
         if (!this.isCreate) {
-            console.log(this.user);
             this.username = this.user.nomusua;
             this.id = this.user.ID_usuario;
             this.oldPassword = this.user.Contraseña;

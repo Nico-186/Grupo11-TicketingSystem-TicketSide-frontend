@@ -15,6 +15,7 @@
             :status-list="listaEstatus"
             :priority-list="listaPrioridades"
             :user-list="userList"
+            :assignable-users="assignableUsers"
             :open-selected-ticket="(ticketId) => showSelectedTicket(ticketId)"
             :logged-user="loggedUser"
             ></ticketList>
@@ -133,7 +134,6 @@ export default {
             return this.ticketList.find((obj) => obj.ID_ticket == id)
         },
         dataToLoggedUser(resData) {
-            console.log(resData)
             this.loggedUser = {
                 id: resData.ID_usuario,
                 username: resData.nomusua,
@@ -152,7 +152,6 @@ export default {
         },
         async tryLogIn(user, pass) {
             var encryptedPass = SHA256(pass + process.env.VUE_APP_SECRET).toString();
-            console.log(encryptedPass);
             await axios.get(`${process.env.VUE_APP_BACKENDURL_TICKET}/logindata/?username=${user}&password=${encryptedPass}`).then(
                 async (response) => {
                     if (JSON.stringify(response.data[0]) == JSON.stringify([])) {
@@ -262,7 +261,6 @@ export default {
         async createUser(id, user, isCreate, page){
             if (user.username == '' || user.role == -1 || (isCreate && user.newPassword == '')) {
                 alert("Ingrese todos los campos");
-                console.log(user);
             } else if (isCreate){
                 await axios.post(`${process.env.VUE_APP_BACKENDURL_USER}/admin/allusers/`, user).then(
                     async (response) => {

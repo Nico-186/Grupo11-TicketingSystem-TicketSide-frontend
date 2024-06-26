@@ -261,7 +261,6 @@ export default {
         async getTime() {
             await axios.get(`${process.env.VUE_APP_BACKENDURL_TICKET}/time/?idstatus=${this.newStatus}&idticket=${this.ticket.ID_ticket}`).then(
                 (response) => {
-                    console.log(response.data)
                     this.time = response.data[0][0];
                 }
             )

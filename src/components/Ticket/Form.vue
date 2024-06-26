@@ -51,7 +51,6 @@ export default {
             await axios.post(`${process.env.VUE_APP_BACKENDURL_TICKET}/tickets/`, { id: this.idLog, name: this.ticketName.trim(), description: this.ticketDescription.trim(), priority: this.ticketPriority, date: new Date().toISOString().replace('T', ' ').replace('Z', ' ') }).then(
                     async (response) => {
                         await this.$parent.getTickets();
-                        console.log(this.$parent.ticketList)
                         await axios.post(`${process.env.VUE_APP_BACKENDURL_TICKET}/time/`, { status: 1, start: new Date().toISOString().replace('T', ' ').replace('Z', ' '), ticket: (this.$parent.ticketList[this.$parent.ticketList.length - 1]).ID_ticket }).then(
                             (response) => {
                                 alert(`Ticket publicado con éxito`);

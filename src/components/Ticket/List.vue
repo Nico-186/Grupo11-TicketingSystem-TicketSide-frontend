@@ -2,7 +2,7 @@
     <div class="d-flex h-100 flex-column p-0 m-0 gap-4">
         <div>
             <label>Buscar ticket</label>
-            <input type="text" class="form-control" placeholder="Búsqueda">
+            <input v-model="searchText" type="text" class="form-control" placeholder="Búsqueda"/>
             <div class="d-flex gap-2 pt-2">
                 <select v-model="selectedStatusID"
                 class="text-reset btn btn-outline-secondary text-start w-25"
@@ -24,27 +24,27 @@
                         {{ prioridad.tipoprio }}
                     </option>
                 </select>
-                <select v-model="selectedPriorityID"
+                <select v-model="userID"
                 class="text-reset btn btn-outline-secondary text-start w-25"
                 style="background-color: #212529">
                     <option :value="-1" selected>Creado por</option>
-                    <option v-for="prioridad in priorityList"
+                    <option v-for="user in userList"
                     style="background-color: #212529;"
-                    :value="prioridad.ID_prio">
-                        {{ prioridad.tipoprio }}
+                    :value="user.ID_usuario">
+                        {{ user.nomusua }}
                     </option>
                 </select>
-                <select v-model="selectedPriorityID"
+                <select v-model="managerID"
                 class="text-reset btn btn-outline-secondary text-start w-25"
                 style="background-color: #212529">
                     <option :value="-1" selected>Encargado</option>
-                    <option v-for="prioridad in priorityList"
+                    <option v-for="encargado in assignableUsers"
                     style="background-color: #212529;"
-                    :value="prioridad.ID_prio">
-                        {{ prioridad.tipoprio }}
+                    :value="encargado.ID_usuario">
+                        {{ encargado.nomusua }}
                     </option>
                 </select>
-                <button class="btn btn-secondary">Buscar</button>
+                <button class="btn btn-secondary" @click="doSearch()">Buscar</button>
             </div>
         </div>
         <div class="flex-grow-1 d-flex flex-column border w-100" style="background-color: #171a1c; min-height: 0;">
@@ -85,19 +85,64 @@
 
 <script>
 export default {
-    props: ["ticketList", "statusList", "priorityList", "userList", "openSelectedTicket", "loggedUser"],
+    props: ["ticketList", "statusList", "priorityList", "userList", "assignableUsers", "openSelectedTicket", "loggedUser"],
     data() {
         return {
             headers: ['Asunto', 'Estatus', 'Prioridad', 'Fecha de publicación', 'Creado por', 'Encargado'],
             ticketsToShow: [],
+            searchText: '',
             selectedPriorityID: -1,
-            selectedStatusID: -1
+            selectedStatusID: -1,
+            userID: -1,
+            managerID: -1
         }
     },
     mounted() {
-        this.roleBasedList();
+        this.ticketsToShow = this.roleBasedList(this.ticketList);
     },
     methods: {
+        async doSearch() {
+            let urlParams = [];
+            
+            if(this.searchText.trim() == '' && this.selectedPriorityID == -1 && this.selectedStatusID == -1 && this.userID == -1 && this.managerID == -1){
+                this.$parent.activePage = 0;
+                this.$parent.loadData(1);
+            }
+
+            if (this.searchText.trim() != '') {
+                urlParams.push(`text=${this.searchText}`);
+            }
+            if (this.selectedPriorityID != -1) {
+                urlParams.push(`idPrioridad=${this.selectedPriorityID}`);
+            }
+            if (this.selectedStatusID != -1) {
+                urlParams.push(`idEstatus=${this.selectedStatusID}`);
+            }
+            if (this.userID != -1) {
+                urlParams.push(`idUsuario=${this.userID}`);
+            }
+            if (this.managerID != -1) {
+                urlParams.push(`idEncargado=${this.managerID}`);
+            }
+            await axios.get('https://busqueda.azurewebsites.net/api/busqueda/?'.concat(urlParams.join('&'))).then(
+                (response) => {
+                    this.searchText = '';
+                    this.selectedPriorityID = -1;
+                    this.selectedStatusID = -1;
+                    this.userID = -1;
+                    this.managerID = -1; 
+                    if(response.data.length != 0) {
+                        if (this.roleBasedList(response.data) == 0) {
+                            return alert('No se han encontrado tickets con los parámetros de búsqueda');
+                        } else {
+                            this.ticketsToShow = this.roleBasedList(response.data);
+                        }
+                    } else {
+                        return alert('No se han encontrado tickets con los parámetros de búsqueda');
+                    }
+                }
+            )
+        },
         findStatusById(id) {
             return this.statusList.find((obj) => obj.ID_status == id)
         },
@@ -107,11 +152,11 @@ export default {
         findUserById(id) {
             return this.userList.find((obj) => obj.ID_usuario == id)
         },
-        roleBasedList() {
+        roleBasedList(list) {
             if (this.loggedUser.role == 0){
-                this.ticketsToShow = this.ticketList.filter(this.isFromUserLogged);
+                return list.filter(this.isFromUserLogged);
             } else {
-                this.ticketsToShow = this.ticketList;
+                return list;
             }
         },
         isFromUserLogged(ticket){
